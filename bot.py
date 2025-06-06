@@ -5,25 +5,9 @@ import asyncio
 import json
 import os
 from datetime import datetime, timezone
-from flask import Flask
-from threading import Thread
-
-app = Flask('')
-
-@app.route('/')
-def home():
-    return "Bot is running!"
-
-def run():
-    app.run(host='0.0.0.0', port=8080)
-
-def keep_alive():
-    t = Thread(target=run)
-    t.start()
 
 intents = discord.Intents.default()
 intents.message_content = True
-keep_alive()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 WEBHOOK_URL = "https://discord.com/api/webhooks/1370465032910934139/UP4j79JSds8H5Tex6gFb3e9yWVIA_lN8aRTH7igpMRBfYZEoV5xePbz--VECowjSYN_N"
