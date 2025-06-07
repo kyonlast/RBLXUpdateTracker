@@ -5,7 +5,6 @@ import asyncio
 import json
 import os
 from datetime import datetime, timezone
-from keep_alive import keep_alive
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -308,5 +307,4 @@ async def commands(ctx):
     await ctx.send(help_text)
 
 # Start the bot
-keep_alive()
 bot.run("MTM2MjgxMzEzODc1OTg0NDA1Mg.GaHyg9.eLk2E9aiq8Wk1M5EiLyY7ptOSr0MbU9TlVeJIU")
