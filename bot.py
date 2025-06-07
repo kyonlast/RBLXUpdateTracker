@@ -307,4 +307,4 @@ async def commands(ctx):
     await ctx.send(help_text)
 
 # Start the bot
-bot.run("MTM2MjgxMzEzODc1OTg0NDA1Mg.GaHyg9.eLk2E9aiq8Wk1M5EiLyY7ptOSr0MbU9TlVeJIU")
+bot.run(os.getenv("TOKEN"))
