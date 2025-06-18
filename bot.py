@@ -10,6 +10,7 @@ intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
+TARGET_USER_ID = 630035129414320191  # the BFDI dickrider's User ID
 WEBHOOK_URL = "https://discord.com/api/webhooks/1370465032910934139/UP4j79JSds8H5Tex6gFb3e9yWVIA_lN8aRTH7igpMRBfYZEoV5xePbz--VECowjSYN_N"
 OPEN_CLOUD_API_KEY = "SAYswG43mUKqp1iWRWG7vlUFjw/Ceeof8BJH790dSb7U7eQeZXlKaGJHY2lPaUpTVXpJMU5pSXNJbXRwWkNJNkluTnBaeTB5TURJeExUQTNMVEV6VkRFNE9qVXhPalE1V2lJc0luUjVjQ0k2SWtwWFZDSjkuZXlKaVlYTmxRWEJwUzJWNUlqb2lVMEZaYzNkSE5ETnRWVXR4Y0RGcFYxSlhSemQyYkZWR2FuY3ZRMlZsYjJZNFFrcElOemt3WkZOaU4xVTNaVkZsSWl3aWIzZHVaWEpKWkNJNklqRTFOelE1TXpReU5qVWlMQ0poZFdRaU9pSlNiMkpzYjNoSmJuUmxjbTVoYkNJc0ltbHpjeUk2SWtOc2IzVmtRWFYwYUdWdWRHbGpZWFJwYjI1VFpYSjJhV05sSWl3aVpYaHdJam94TnpRMk9EQTVNREl6TENKcFlYUWlPakUzTkRZNE1EVTBNak1zSW01aVppSTZNVGMwTmpnd05UUXlNMzAuRVp4aVByWUpSd3NCLWhhRngzaUZXTHNnWnoyY3JvckgtLWFIaW9mSHBKZ0FiYkcybjd0NXlwREVJUGVSaTRaSE10QmRwNVdkSy11ekhvbENjbVVtckhDWUNKSUhSeFdWa1pBUGp2TjBnSzVLUkJINE1IY29icV9lZVlmQjdTcl9PUjBwM0tJYk5zeHV5aVEwUzNuNzUycEhVRmFNanJyeFJSb1dwaTNMSk5BYTd5Q2VmTmxkd1lpU1F0aXFOWkJST1Bhb3BXU1JkZ1dlM0JrZl80TjRCRjFhMzh0M0NLR3NGZzdiUFlocG5lN3V5VkdfbjBGNFpTeWZqLXN4eHVwM05IaE10NmN3d1V5OGtvd1E4YTBFWE1uTTN0dlZraHRONFBNSV81ZlRuWDIwYUF1WWpmb2hHSWt2ZkF1NGNxaVdQLU9LWVY3ODZ2V1B3aUZGam1Pczh3"
 
@@ -305,6 +306,32 @@ async def commands(ctx):
         "`!listbadges` - List all tracked badges."
     )
     await ctx.send(help_text)
+
+@bot.event
+async def on_message(message):
+    if message.author.id == bot.user.id:
+        return
+
+    reacted = False
+
+    # React if message is from the target user
+    if message.author.id == TARGET_USER_ID:
+        try:
+            await message.add_reaction("🖕")
+            reacted = True
+        except Exception as e:
+            print(f"Failed to react to target user message: {e}")
+
+    # React if message mentions the target user
+    if not reacted and message.mentions:  # message.mentions is a list of User objects
+        if any(user.id == TARGET_USER_ID for user in message.mentions):
+            try:
+                await message.add_reaction("🖕")
+            except Exception as e:
+                print(f"Failed to react to mention message: {e}")
+
+    await bot.process_commands(message)
+
 
 # Start the bot
 bot.run(os.getenv("TOKEN"))
