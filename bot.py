@@ -5,10 +5,12 @@ import asyncio
 import json
 import os
 from datetime import datetime, timezone
+from discord import app_commands
 
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
+tree = bot.tree  # This gives access to slash commands
 
 TARGET_USER_ID = 630035129414320191 
 WEBHOOK_URL = os.getenv("WEBHOOK_URL")
@@ -34,6 +36,7 @@ async def send_webhook(embed):
 
 @bot.event
 async def on_ready():
+    await bot.tree.sync()
     print(f"Bot connected as {bot.user}")
     check_badge_updates.start()
     check_game_updates.start()
