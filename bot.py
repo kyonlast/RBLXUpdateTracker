@@ -6,6 +6,8 @@ import json
 import os
 from datetime import datetime, timezone
 from discord import app_commands
+from dotenv import load_dotenv
+load_dotenv()
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -208,33 +210,43 @@ async def check_game_updates():
         json.dump(tracked, f, indent=2)
 
 
-# Commands
-@bot.command()
-async def addgame(ctx, universe_id):
+# Slash command: Add Game
+@tree.command(name="addgame", description="Add a game to track by universe ID")
+@app_commands.describe(universe_id="The Universe ID of the game")
+async def add_game_slash(interaction: discord.Interaction, universe_id: str):
     with open(GAME_FILE, "r") as f:
         tracked = json.load(f)
+
     if universe_id in tracked:
-        await ctx.send("Game already tracked.")
+        await interaction.response.send_message("Game already tracked.", ephemeral=True)
         return
+
     tracked[universe_id] = ""
     with open(GAME_FILE, "w") as f:
         json.dump(tracked, f, indent=2)
-    await ctx.send("Game added.")
 
-@bot.command()
-async def removegame(ctx, universe_id):
+    await interaction.response.send_message("Game added.", ephemeral=True)
+
+# Slash command: Remove Game
+@tree.command(name="removegame", description="Remove a tracked game by universe ID")
+@app_commands.describe(universe_id="The Universe ID of the game")
+async def remove_game_slash(interaction: discord.Interaction, universe_id: str):
     with open(GAME_FILE, "r") as f:
         tracked = json.load(f)
+
     if universe_id not in tracked:
-        await ctx.send("Game not tracked.")
+        await interaction.response.send_message("Game not tracked.", ephemeral=True)
         return
+
     del tracked[universe_id]
     with open(GAME_FILE, "w") as f:
         json.dump(tracked, f, indent=2)
-    await ctx.send("Game removed.")
 
-@bot.command()
-async def listgames(ctx):
+    await interaction.response.send_message("Game removed.", ephemeral=True)
+
+# Slash command: List Games
+@tree.command(name="listgames", description="List all tracked games")
+async def list_games_slash(interaction: discord.Interaction):
     with open(GAME_FILE, "r") as f:
         tracked = json.load(f)
 
@@ -242,7 +254,6 @@ async def listgames(ctx):
     async with aiohttp.ClientSession() as session:
         for universe_id in tracked.keys():
             try:
-                # Get game data to fetch the game name
                 async with session.get(f"https://games.roblox.com/v1/games?universeIds={universe_id}") as res:
                     game_data = await res.json()
                     game_name = game_data["data"][0]["name"]
@@ -251,34 +262,45 @@ async def listgames(ctx):
                 print(f"Error fetching game info for {universe_id}: {e}")
                 game_info.append(f"**[Unknown Game]** (`{universe_id}`)")
 
-    await ctx.send("Tracked games:\n" + "\n".join(game_info))
+    await interaction.response.send_message("Tracked games:\n" + "\n".join(game_info), ephemeral=True)
 
-@bot.command()
-async def addbadge(ctx, badge_id):
+# Slash command: Add Badge
+@tree.command(name="addbadge", description="Add a badge to track by badge ID")
+@app_commands.describe(badge_id="The Badge ID")
+async def add_badge_slash(interaction: discord.Interaction, badge_id: str):
     with open(BADGE_FILE, "r") as f:
         tracked = json.load(f)
+
     if badge_id in tracked:
-        await ctx.send("Badge already tracked.")
+        await interaction.response.send_message("Badge already tracked.", ephemeral=True)
         return
+
     tracked[badge_id] = 0
     with open(BADGE_FILE, "w") as f:
         json.dump(tracked, f, indent=2)
-    await ctx.send("Badge added.")
 
-@bot.command()
-async def removebadge(ctx, badge_id):
+    await interaction.response.send_message("Badge added.", ephemeral=True)
+
+# Slash command: Remove Badge
+@tree.command(name="removebadge", description="Remove a tracked badge by badge ID")
+@app_commands.describe(badge_id="The Badge ID")
+async def remove_badge_slash(interaction: discord.Interaction, badge_id: str):
     with open(BADGE_FILE, "r") as f:
         tracked = json.load(f)
+
     if badge_id not in tracked:
-        await ctx.send("Badge not tracked.")
+        await interaction.response.send_message("Badge not tracked.", ephemeral=True)
         return
+
     del tracked[badge_id]
     with open(BADGE_FILE, "w") as f:
         json.dump(tracked, f, indent=2)
-    await ctx.send("Badge removed.")
 
-@bot.command()
-async def listbadges(ctx):
+    await interaction.response.send_message("Badge removed.", ephemeral=True)
+
+# Slash command: List Badges
+@tree.command(name="listbadges", description="List all tracked badges")
+async def list_badges_slash(interaction: discord.Interaction):
     with open(BADGE_FILE, "r") as f:
         tracked = json.load(f)
 
@@ -286,7 +308,6 @@ async def listbadges(ctx):
     async with aiohttp.ClientSession() as session:
         for badge_id in tracked.keys():
             try:
-                # Get badge data to fetch the badge name
                 async with session.get(f"https://badges.roblox.com/v1/badges/{badge_id}") as res:
                     badge_data = await res.json()
                     badge_name = badge_data["name"]
@@ -295,20 +316,7 @@ async def listbadges(ctx):
                 print(f"Error fetching badge info for {badge_id}: {e}")
                 badge_info.append(f"**[Unknown Badge]** (`{badge_id}`)")
 
-    await ctx.send("Tracked badges:\n" + "\n".join(badge_info))
-
-@bot.command()
-async def commands(ctx):
-    help_text = (
-        "**List of Commands:**\n\n"
-        "`!addgame <universeid>` - Add a game to track.\n"
-        "`!removegame <universeid>` - Remove a game from tracking.\n"
-        "`!listgames` - List all tracked games.\n\n"
-        "`!addbadge <badgeid>` - Add a badge to track.\n"
-        "`!removebadge <badgeid>` - Remove a badge from tracking.\n"
-        "`!listbadges` - List all tracked badges."
-    )
-    await ctx.send(help_text)
+    await interaction.response.send_message("Tracked badges:\n" + "\n".join(badge_info), ephemeral=True)
 
 @bot.event
 async def on_message(message):
