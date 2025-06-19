@@ -7,13 +7,15 @@ import os
 import random
 from datetime import datetime, timezone
 from discord import app_commands
+from dotenv import load_dotenv
+load_dotenv()
 
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 tree = bot.tree  # This gives access to slash commands
 
-TARGET_USER_ID = 630035129414320191
+TARGET_USER_ID = 568741811099664386 
 WEBHOOK_URL = os.getenv("WEBHOOK_URL")
 OPEN_CLOUD_API_KEY = os.getenv("OPEN_CLOUD_API_KEY")
 
@@ -389,7 +391,12 @@ You got played, dude. Tabby Bee’s a fraud, and you lost 100 Robux. Facts. End 
             "https://media.discordapp.net/attachments/1004788285605937192/1377477846313992252/watermark.gif?ex=685573f6&is=68542276&hm=30a58c9f4c6ee6af05ef4c30aa81ff94db662bccc31a1a30a3f180c0768a1d9d&=&width=1050&height=578",
             "https://cdn.discordapp.com/attachments/983841637295865906/1364670601209446562/giffy.gif?ex=685500c9&is=6853af49&hm=c80af5b472e3c7e05af57833fbf907e6fc83710af9f94d677c5e9bcff9eb8a95&",
             "https://tenor.com/view/sonic-boom-shut-up-mf-sonic-and-knuckles-gif-11592251616573120658",
-            "https://cdn.discordapp.com/attachments/737764979654131813/1362874297537925430/speechmemified_Screenshot_2025-04-18_202035.gif?ex=68550f59&is=6853bdd9&hm=6e23df9b522846c56d6c79a0113ae52a54a98240ee63b36466f29a2134a8c171&"
+            "https://cdn.discordapp.com/attachments/737764979654131813/1362874297537925430/speechmemified_Screenshot_2025-04-18_202035.gif?ex=68550f59&is=6853bdd9&hm=6e23df9b522846c56d6c79a0113ae52a54a98240ee63b36466f29a2134a8c171&",
+            "https://cdn.discordapp.com/attachments/1332761690647040011/1348785501729194044/togif.gif?ex=685538a2&is=6853e722&hm=d28d09a1f2ca00d2e0991624f8d293e3c5dd816094b4e9cb01e9ab139da18933&",
+            "https://media.discordapp.net/attachments/1061072781678227506/1061073289348386886/cta.gif?ex=68554ec1&is=6853fd41&hm=a69924f159330a26f9a9b01a198a6d15b27f0d242b0d71722920645997770286&",
+            "https://tenor.com/view/mcdonalds-mcdonald's-mcdonald's-soap-gif-mcdonalds-soap-gif-legend-4x-gif-14156725404483926518",
+            "https://media.discordapp.net/attachments/1099448217290149891/1272444913170255912/attachment.gif?ex=685502ac&is=6853b12c&hm=186ade644acef91a6f684591c3d76e2c9b3b9c25c508fe8771260f96ecabffb6&",
+            "https://cdn.discordapp.com/attachments/1266843788425302138/1340407535395672065/attachment-10.gif?ex=6855108c&is=6853bf0c&hm=e57183915d52715b2fc1ed010d127db9780264bcb78a2b985aa47485706aa2b8&"
         ]
 
         try:
