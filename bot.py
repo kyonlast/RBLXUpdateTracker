@@ -41,8 +41,18 @@ async def send_webhook(embed):
 async def on_ready():
     await bot.tree.sync()
     print(f"Bot connected as {bot.user}")
-    check_badge_updates.start()
-    check_game_updates.start()
+
+    if not check_badge_updates.is_running():
+        check_badge_updates.start()
+        print("Started badge updates.")
+    else:
+        print("Badge update task already running.")
+
+    if not check_game_updates.is_running():
+        check_game_updates.start()
+        print("Started game updates.")
+    else:
+        print("Game update task already running.")
 
 # Badge Tracker
 
@@ -326,11 +336,11 @@ async def list_badges_slash(interaction: discord.Interaction):
 async def commands_slash(interaction: discord.Interaction):
     help_text = (
         "**🛠️ Available Slash Commands:**\n\n"
-        "📌 `/addgame <universe_id>` — Add a game to track.\n"
-        "📌 `/removegame <universe_id>` — Remove a tracked game.\n"
+        "📌 `/addgame <universe_id>` — Add a game to track using the Universe ID (not placeID).\n"
+        "📌 `/removegame <universe_id>` — Remove a tracked game using the Universe ID (not placeID).\n"
         "📌 `/listgames` — List all tracked games.\n\n"
-        "📌 `/addbadge <badge_id>` — Add a badge to track.\n"
-        "📌 `/removebadge <badge_id>` — Remove a tracked badge.\n"
+        "📌 `/addbadge <badge_id>` — Add a badge to track using the Badge ID.\n"
+        "📌 `/removebadge <badge_id>` — Remove a tracked badge using the Badge ID.\n"
         "📌 `/listbadges` — List all tracked badges.\n\n"
         "🕵️ `/commands` — Show this help message."
     )
@@ -369,22 +379,9 @@ async def on_message(message):
     ):
         roasts = [
     "FUCK YOU SCRIPTED 🖕",
-    "pay up the 100 robux my guy",
+    "stop jerking off to fortnite skins",
     "bfdi sucks bro",
-    "tabby bee is a fraud",
-    """
-Yo Scripted, listen up. Everybody knows Tabby Bee from Bee Swarm Simulator is straight up a fraud. Like, for real, that dude’s fake as hell. You rollin’ with him? Bruh, that’s embarrassing. How you gonna claim you’re the man when your whole crew’s out here acting sus?
-
-And don’t forget that bet you made, yeah? The one where you said:
-
-“betting 100 robux @ced if I’m right I get 100 robux... if ur right u get 100”
-
-Well, guess what? Fortnite Chapter 3 OG never dropped. So that means **you owe me 100 Robux**, no cap. You lost that bet clean. Ain’t no wiggle room. You keep acting like you’re good, but you out here broke on that bet, and I ain’t seeing no payment coming through.
-
-So next time you wanna talk, just remember who’s really winning — the one you owe 100 Robux to. Pay up, Scripted. Stop running your mouth and embarrassing yourself. I’m here calling you out every time you ping this bot, and it’s not gonna stop.
-
-You got played, dude. Tabby Bee’s a fraud, and you lost 100 Robux. Facts. End of story.
-"""
+    "tabby bee is a fraud"
 ]
 
         gifs = [
