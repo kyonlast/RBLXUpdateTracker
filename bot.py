@@ -5,17 +5,36 @@ import asyncio
 import json
 import os
 import random
+import sys
 from datetime import datetime, timezone
 from discord import app_commands
+from dotenv import load_dotenv
+load_dotenv()
 
 intents = discord.Intents.default()
 intents.message_content = True
+intents.members = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 tree = bot.tree  # This gives access to slash commands
 
 TARGET_USER_ID = 568741811099664386 
+AUTHORIZED_ROLE_ID = 1367168922926841867  
 WEBHOOK_URL = os.getenv("WEBHOOK_URL")
 OPEN_CLOUD_API_KEY = os.getenv("OPEN_CLOUD_API_KEY")
+TOKEN = os.getenv("TOKEN")
+
+# Check environment variables early
+if not WEBHOOK_URL:
+    print("❌ Error: WEBHOOK_URL environment variable is not set!")
+if not OPEN_CLOUD_API_KEY:
+    print("❌ Error: OPEN_CLOUD_API_KEY environment variable is not set!")
+if not TOKEN:
+    print("❌ Error: TOKEN environment variable is not set!")
+
+if not WEBHOOK_URL or not OPEN_CLOUD_API_KEY or not TOKEN:
+    print("❌ One or more environment variables are missing. Exiting the bot.")
+    sys.exit(1)
+
 
 # JSON files
 BADGE_FILE = "tracked_badges.json"
@@ -219,12 +238,22 @@ async def check_game_updates():
         json.dump(tracked, f, indent=2)
 
 
+# Role Check Function for Slash Commands
+def has_required_role(interaction: discord.Interaction) -> bool:
+    if not isinstance(interaction.user, discord.Member):
+        return False
+    return any(role.id == AUTHORIZED_ROLE_ID for role in interaction.user.roles)   
+
 # Slash Commands:
 
 # Slash command: Add Game
 @tree.command(name="addgame", description="Add a game to track by universe ID")
 @app_commands.describe(universe_id="The Universe ID of the game")
 async def add_game_slash(interaction: discord.Interaction, universe_id: str):
+    if not has_required_role(interaction):
+        await interaction.response.send_message("Unauthorized Request")
+        return
+
     with open(GAME_FILE, "r") as f:
         tracked = json.load(f)
 
@@ -242,6 +271,10 @@ async def add_game_slash(interaction: discord.Interaction, universe_id: str):
 @tree.command(name="removegame", description="Remove a tracked game by universe ID")
 @app_commands.describe(universe_id="The Universe ID of the game")
 async def remove_game_slash(interaction: discord.Interaction, universe_id: str):
+    if not has_required_role(interaction):
+        await interaction.response.send_message("Unauthorized Request")
+        return
+
     with open(GAME_FILE, "r") as f:
         tracked = json.load(f)
 
@@ -258,6 +291,10 @@ async def remove_game_slash(interaction: discord.Interaction, universe_id: str):
 # Slash command: List Games
 @tree.command(name="listgames", description="List all tracked games")
 async def list_games_slash(interaction: discord.Interaction):
+    if not has_required_role(interaction):
+        await interaction.response.send_message("Unauthorized Request")
+        return
+
     with open(GAME_FILE, "r") as f:
         tracked = json.load(f)
 
@@ -279,6 +316,10 @@ async def list_games_slash(interaction: discord.Interaction):
 @tree.command(name="addbadge", description="Add a badge to track by badge ID")
 @app_commands.describe(badge_id="The Badge ID")
 async def add_badge_slash(interaction: discord.Interaction, badge_id: str):
+    if not has_required_role(interaction):
+        await interaction.response.send_message("Unauthorized Request")
+        return
+
     with open(BADGE_FILE, "r") as f:
         tracked = json.load(f)
 
@@ -296,6 +337,10 @@ async def add_badge_slash(interaction: discord.Interaction, badge_id: str):
 @tree.command(name="removebadge", description="Remove a tracked badge by badge ID")
 @app_commands.describe(badge_id="The Badge ID")
 async def remove_badge_slash(interaction: discord.Interaction, badge_id: str):
+    if not has_required_role(interaction):
+        await interaction.response.send_message("Unauthorized Request")
+        return
+
     with open(BADGE_FILE, "r") as f:
         tracked = json.load(f)
 
@@ -312,6 +357,10 @@ async def remove_badge_slash(interaction: discord.Interaction, badge_id: str):
 # Slash command: List Badges
 @tree.command(name="listbadges", description="List all tracked badges")
 async def list_badges_slash(interaction: discord.Interaction):
+    if not has_required_role(interaction):
+        await interaction.response.send_message("Unauthorized Request")
+        return
+
     with open(BADGE_FILE, "r") as f:
         tracked = json.load(f)
 
@@ -332,6 +381,10 @@ async def list_badges_slash(interaction: discord.Interaction):
 # Slash command: Help
 @tree.command(name="commands", description="List all available bot commands")
 async def commands_slash(interaction: discord.Interaction):
+    if not has_required_role(interaction):
+        await interaction.response.send_message("Unauthorized Request")
+        return
+
     help_text = (
         "**🛠️ Available Slash Commands:**\n\n"
         "📌 `/addgame <universe_id>` — Add a game to track using the Universe ID (not placeID).\n"
@@ -343,6 +396,7 @@ async def commands_slash(interaction: discord.Interaction):
         "🕵️ `/commands` — Show this help message."
     )
     await interaction.response.send_message(help_text, ephemeral=True)
+
 
 # Scripted's curse
 @bot.event
@@ -410,4 +464,4 @@ async def on_message(message):
 
 
 # Start the bot
-bot.run(os.getenv("TOKEN"))
+bot.run(TOKEN)
