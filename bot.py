@@ -8,8 +8,6 @@ import random
 import sys
 from datetime import datetime, timezone
 from discord import app_commands
-from dotenv import load_dotenv
-load_dotenv()
 
 intents = discord.Intents.default()
 intents.message_content = True
