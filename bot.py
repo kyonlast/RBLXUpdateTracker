@@ -15,7 +15,8 @@ intents.members = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 tree = bot.tree  # This gives access to slash commands
 
-TARGET_USER_ID = 568741811099664386 
+SCRIPTED_USER_ID = 568741811099664386 
+DUNKIN_USER_ID = 1290528478160228396
 AUTHORIZED_ROLE_ID = 1367168922926841867  
 WEBHOOK_URL = os.getenv("WEBHOOK_URL")
 OPEN_CLOUD_API_KEY = os.getenv("OPEN_CLOUD_API_KEY")
@@ -56,6 +57,9 @@ async def send_webhook(embed):
 async def on_ready():
     await bot.tree.sync()
     print(f"Bot connected as {bot.user}")
+
+    # Set the bot's activity
+    await bot.change_presence(activity=discord.Game(name="Doki Doki Literature Club"))
 
     if not check_badge_updates.is_running():
         check_badge_updates.start()
@@ -396,7 +400,7 @@ async def commands_slash(interaction: discord.Interaction):
     await interaction.response.send_message(help_text, ephemeral=True)
 
 
-# Scripted's curse
+# Scripted's Curse & Dunkin's Purgatory
 @bot.event
 async def on_message(message):
     if message.author.id == bot.user.id:
@@ -405,24 +409,41 @@ async def on_message(message):
     reacted = False
 
     # React if message is from the target user
-    if message.author.id == TARGET_USER_ID:
+    if message.author.id == SCRIPTED_USER_ID:
         try:
             await message.add_reaction("🖕")
             reacted = True
         except Exception as e:
             print(f"Failed to react to target user message: {e}")
 
+    # React to Dunkin with 💀
+    if message.author.id == DUNKIN_USER_ID:
+        try:
+            await message.add_reaction("💀")
+            reacted = True
+        except Exception as e:
+            print(f"Failed to react to Dunkin's message: {e}")
+
     # React if message mentions the target user
     if not reacted and message.mentions:
-        if any(user.id == TARGET_USER_ID for user in message.mentions):
+        if any(user.id == SCRIPTED_USER_ID for user in message.mentions):
             try:
                 await message.add_reaction("🖕")
             except Exception as e:
                 print(f"Failed to react to mention message: {e}")
 
+    # React if message mentions Dunkin
+    if not reacted and message.mentions:
+        if any(user.id == DUNKIN_USER_ID for user in message.mentions):
+            try:
+                await message.add_reaction("💀")
+                reacted = True
+            except Exception as e:
+                print(f"Failed to react to mention message: {e}")
+
     # If Scripted pings the bot (not a command), reply with either a roast or a gif (randomly)
     if (
-        message.author.id == TARGET_USER_ID and
+        message.author.id == SCRIPTED_USER_ID and
         bot.user in message.mentions and
         not message.content.startswith("!") and
         not message.content.startswith("/")
@@ -431,7 +452,7 @@ async def on_message(message):
     "FUCK YOU SCRIPTED 🖕",
     "stop jerking off to fortnite skins",
     "bfdi sucks bro",
-    "tabby bee is a fraud"
+    "stop sending toriel porn my nigga"
 ]
 
         gifs = [
@@ -458,6 +479,7 @@ async def on_message(message):
             print(f"Failed to respond to Scripted's ping: {e}")
 
     await bot.process_commands(message)
+
 
 
 
