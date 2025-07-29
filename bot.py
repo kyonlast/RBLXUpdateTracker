@@ -59,7 +59,7 @@ async def on_ready():
     print(f"Bot connected as {bot.user}")
 
     # Set the bot's activity
-    await bot.change_presence(activity=discord.Game(name="Doki Doki Literature Club"))
+    await bot.change_presence(activity=discord.Game(name="Deltarune"))
 
     if not check_badge_updates.is_running():
         check_badge_updates.start()
