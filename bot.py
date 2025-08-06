@@ -56,7 +56,7 @@ async def send_webhook(embed):
 @bot.event
 async def on_ready():
     await bot.tree.sync()
-    print(f"Bot connected as {bot.user}")
+    print(f"✅ Bot connected as {bot.user}")
 
     # Set the bot's activity
     await bot.change_presence(activity=discord.Game(name="Deltarune"))
@@ -65,13 +65,13 @@ async def on_ready():
         check_badge_updates.start()
         print("Started badge updates.")
     else:
-        print("Badge update task already running.")
+        print("⚠️ Badge update task already running.")
 
     if not check_game_updates.is_running():
         check_game_updates.start()
         print("Started game updates.")
     else:
-        print("Game update task already running.")
+        print("⚠️ Game update task already running.")
 
 # Badge Tracker
 
