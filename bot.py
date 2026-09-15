@@ -23,9 +23,10 @@ tree = bot.tree
 
 SCRIPTED_USER_ID = 568741811099664386
 DUNKIN_USER_ID = 1290528478160228396
-AUTHORIZED_ROLE_ID = 1549184103394578503
+AUTHORIZED_ROLE_ID = 1549238480721412247
 
-WEBHOOK_URL = os.getenv("WEBHOOK_URL")
+BADGE_WEBHOOK_URL = os.getenv("BADGE_WEBHOOK_URL")
+GAME_WEBHOOK_URL = os.getenv("GAME_WEBHOOK_URL")
 OPEN_CLOUD_API_KEY = os.getenv("OPEN_CLOUD_API_KEY")
 TOKEN = os.getenv("TOKEN")
 
@@ -42,8 +43,11 @@ API_CONCURRENCY = 10
 # ENVIRONMENT CHECK
 # ============================================================
 
-if not WEBHOOK_URL:
-    print("❌ Error: WEBHOOK_URL environment variable is not set!")
+if not BADGE_WEBHOOK_URL:
+    print("❌ Error: BADGE_WEBHOOK_URL environment variable is not set!")
+
+if not GAME_WEBHOOK_URL:
+    print("❌ Error: GAME_WEBHOOK_URL environment variable is not set!")
 
 if not OPEN_CLOUD_API_KEY:
     print("❌ Error: OPEN_CLOUD_API_KEY environment variable is not set!")
@@ -51,7 +55,12 @@ if not OPEN_CLOUD_API_KEY:
 if not TOKEN:
     print("❌ Error: TOKEN environment variable is not set!")
 
-if not WEBHOOK_URL or not OPEN_CLOUD_API_KEY or not TOKEN:
+if (
+    not BADGE_WEBHOOK_URL
+    or not GAME_WEBHOOK_URL
+    or not OPEN_CLOUD_API_KEY
+    or not TOKEN
+):
     print("❌ One or more environment variables are missing. Exiting.")
     sys.exit(1)
 
@@ -61,7 +70,8 @@ if not WEBHOOK_URL or not OPEN_CLOUD_API_KEY or not TOKEN:
 # ============================================================
 
 http_session = None
-webhook = None
+badge_webhook = None
+game_webhook = None
 
 # Prevent simultaneous reads/writes to JSON files.
 file_lock = asyncio.Lock()
@@ -295,17 +305,15 @@ async def get_badge_thumbnail(badge_id):
 # WEBHOOK
 # ============================================================
 
-async def send_webhook(embed):
+async def send_webhook(embed, webhook):
     if webhook is None:
         print("⚠️ Webhook is not initialized.")
         return
 
     try:
         await webhook.send(embed=embed)
-
     except discord.HTTPException as e:
         print(f"❌ Discord webhook error: {e}")
-
     except Exception as e:
         print(f"❌ Failed to send webhook: {e}")
 
@@ -317,20 +325,26 @@ async def send_webhook(embed):
 @bot.event
 async def setup_hook():
     global http_session
-    global webhook
+    global badge_webhook
+    global game_webhook
 
     http_session = aiohttp.ClientSession(
         timeout=aiohttp.ClientTimeout(total=20)
     )
 
-    webhook = discord.Webhook.from_url(
-        WEBHOOK_URL,
-        session=http_session
-    )
+    badge_webhook = discord.Webhook.from_url(
+    BADGE_WEBHOOK_URL,
+    session=http_session
+)
 
-    await tree.sync()
+    game_webhook = discord.Webhook.from_url(
+    GAME_WEBHOOK_URL,
+    session=http_session
+)
 
-    guild = discord.Object(id=1549179868317753384)
+    guild = discord.Object(id=1353485428942176276)
+
+    tree.copy_global_to(guild=guild)
     await tree.sync(guild=guild)
 
     print("✅ Slash commands synced.")
@@ -412,7 +426,7 @@ async def check_badge_updates():
                 embed.set_footer(text="Badge Update")
                 embed.timestamp = datetime.now(timezone.utc)
 
-                await send_webhook(embed)
+                await send_webhook(embed, badge_webhook)
 
                 tracked[badge_id] = new_count
                 changed = True
@@ -687,7 +701,7 @@ async def check_game_updates():
                     timezone.utc
                 )
 
-                await send_webhook(embed)
+                await send_webhook(embed, game_webhook)
 
             # ------------------------------------------------
             # Save current state
@@ -1121,7 +1135,7 @@ async def game_check_slash(
         timezone.utc
     )
 
-    await send_webhook(embed)
+    await send_webhook(embed, game_webhook)
 
     await interaction.followup.send(
         f"✅ Game check sent for **{game_name}**.",
@@ -1320,6 +1334,9 @@ async def commands_slash(
 
         "📌 `/removegame <universe_id>` "
         "— Remove a tracked game.\n"
+
+        "📌 `/gamecheck <universe_id>` "
+        "— Manually check a currently tracked Roblox game and send its current update info \n"
 
         "📌 `/listgames` "
         "— List all tracked games.\n\n"
