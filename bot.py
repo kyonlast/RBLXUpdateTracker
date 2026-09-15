@@ -21,9 +21,8 @@ intents.members = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 tree = bot.tree
 
-SCRIPTED_USER_ID = 568741811099664386
-DUNKIN_USER_ID = 1290528478160228396
-AUTHORIZED_ROLE_ID = 1549238480721412247
+SCRIPTED_USER_ID = 630035129414320191
+AUTHORIZED_ROLE_ID = 1367168922926841867
 
 BADGE_WEBHOOK_URL = os.getenv("BADGE_WEBHOOK_URL")
 GAME_WEBHOOK_URL = os.getenv("GAME_WEBHOOK_URL")
@@ -349,13 +348,15 @@ async def setup_hook():
 
     print("✅ Slash commands synced.")
 
-
 @bot.event
 async def on_ready():
     print(f"✅ Bot connected as {bot.user}")
 
     await bot.change_presence(
-        activity=discord.Game(name="Pleiades Watchtower")
+        activity=discord.Activity(
+            type=discord.ActivityType.watching,
+            name="Pleiades Watchtower"
+        )
     )
 
     if not check_badge_updates.is_running():
@@ -708,9 +709,13 @@ async def check_game_updates():
             # ------------------------------------------------
 
             new_data = {
+                "name": data.get(
+                    "name",
+                    game_name
+                ),
                 "universe_update": updated,
                 "subplaces": new_subplace_updates
-            }
+}
 
             if tracked[universe_id] != new_data:
                 tracked[universe_id] = new_data
@@ -839,12 +844,16 @@ async def add_game_slash(
         )
 
     tracked[universe_id] = {
+        "name": game.get(
+            "name",
+            "Unknown Game"
+        ),
         "universe_update": game.get(
             "updated",
             ""
         ),
         "subplaces": subplace_states
-    }
+}
 
     await save_json(GAME_FILE, tracked)
 
@@ -916,27 +925,20 @@ async def list_games_slash(
         )
         return
 
-    await interaction.response.defer()
+    results = []
 
-    async def fetch_game_name(universe_id):
-        game = await get_game(universe_id)
+    for universe_id, game_data in tracked.items():
 
-        if game:
-            return (
-                f"**{game.get('name', 'Unknown Game')}** "
-                f"(`{universe_id}`)"
-            )
+        game_name = game_data.get(
+            "name",
+            "[Unknown Game]"
+        )
 
-        return f"**[Unknown Game]** (`{universe_id}`)"
+        results.append(
+            f"**{game_name}** (`{universe_id}`)"
+        )
 
-    results = await asyncio.gather(
-        *[
-            fetch_game_name(universe_id)
-            for universe_id in tracked
-        ]
-    )
-
-    await interaction.followup.send(
+    await interaction.response.send_message(
         "Tracked games:\n" + "\n".join(results)
     )
 
@@ -1361,7 +1363,7 @@ async def commands_slash(
 
 
 # ============================================================
-# SCRIPTED'S CURSE & DUNKIN'S PURGATORY
+# SCRIPTED'S CURSE
 # ============================================================
 
 
@@ -1372,7 +1374,7 @@ GIFS = [
 
     "https://tenor.com/view/sonic-boom-shut-up-mf-sonic-and-knuckles-gif-11592251616573120658",
 
-    "https://cdn.discordapp.com/attachments/737764979654131813/1362874297537925430/speechmemified_Screenshot_2025-04-18_202035.gif?ex=68550f59&is=6853bdd9&hm=6e23df9b522846c56d6c79a0113ae52a54a98240ee63b36466f29a2134a8c171&",
+    "https://cdn.discordapp.com/attachments/737764979654131813/1362874297537925430/speechmemified_Screenshot_2025-04-18_202035.gif?ex=68550f59&is=6853bdd9&hm=6d6c79a0113ae52a54a98240ee63b36466f29a2134a8c171&",
 
     "https://cdn.discordapp.com/attachments/1332761690647040011/1348785501729194044/togif.gif?ex=685538a2&is=6853e722&hm=d28d09a1f2ca00d2e0991624f8d293e3c5dd816094b4e9cb01e9ab139da18933&",
 
@@ -1392,8 +1394,6 @@ async def on_message(message):
     if message.author.id == bot.user.id:
         return
 
-    reacted = False
-
     # --------------------------------------------------------
     # Scripted
     # --------------------------------------------------------
@@ -1402,7 +1402,6 @@ async def on_message(message):
 
         try:
             await message.add_reaction("🖕")
-            reacted = True
 
         except Exception as e:
             print(
@@ -1410,25 +1409,10 @@ async def on_message(message):
             )
 
     # --------------------------------------------------------
-    # Dunkin
-    # --------------------------------------------------------
-
-    if message.author.id == DUNKIN_USER_ID:
-
-        try:
-            await message.add_reaction("💀")
-            reacted = True
-
-        except Exception as e:
-            print(
-                f"Failed to react to Dunkin's message: {e}"
-            )
-
-    # --------------------------------------------------------
     # Mention Scripted
     # --------------------------------------------------------
 
-    if not reacted and message.mentions:
+    if message.mentions:
 
         if any(
             user.id == SCRIPTED_USER_ID
@@ -1444,45 +1428,24 @@ async def on_message(message):
                 )
 
     # --------------------------------------------------------
-    # Mention Dunkin
-    # --------------------------------------------------------
-
-    if not reacted and message.mentions:
-
-        if any(
-            user.id == DUNKIN_USER_ID
-            for user in message.mentions
-        ):
-
-            try:
-                await message.add_reaction("💀")
-                reacted = True
-
-            except Exception as e:
-                print(
-                    f"Failed to react to mention message: {e}"
-                )
-
-    # --------------------------------------------------------
-    # Scripted pings bot
+    # Anyone pings bot
     # --------------------------------------------------------
 
     if (
-        message.author.id == SCRIPTED_USER_ID
-        and bot.user in message.mentions
+        bot.user in message.mentions
         and not message.content.startswith("!")
         and not message.content.startswith("/")
     ):
 
         try:
 
-                await message.reply(
-                    random.choice(GIFS)
-                )
+            await message.reply(
+                random.choice(GIFS)
+            )
 
         except Exception as e:
             print(
-                f"Failed to respond to Scripted's ping: {e}"
+                f"Failed to respond to bot ping: {e}"
             )
 
     await bot.process_commands(message)
