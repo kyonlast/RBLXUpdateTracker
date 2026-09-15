@@ -1364,12 +1364,6 @@ async def commands_slash(
 # SCRIPTED'S CURSE & DUNKIN'S PURGATORY
 # ============================================================
 
-ROASTS = [
-    "FUCK YOU SCRIPTED 🖕",
-    "stop jerking off to fortnite skins",
-    "bfdi sucks bro",
-    "stop sending toriel porn my nigga"
-]
 
 GIFS = [
     "https://media.discordapp.net/attachments/1004788285605937192/1377477846313992252/watermark.gif?ex=685573f6&is=68542276&hm=30a58c9f4c6ee6af05ef4c30aa81ff94db662bccc31a1a30a3f180c0768a1d9d&=&width=1050&height=578",
@@ -1481,14 +1475,6 @@ async def on_message(message):
     ):
 
         try:
-
-            if random.choice([True, False]):
-
-                await message.reply(
-                    random.choice(ROASTS)
-                )
-
-            else:
 
                 await message.reply(
                     random.choice(GIFS)
